@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import signal
 from functools import partial
 from itertools import cycle
+import os
 
 
 def dataloader_init(x):
@@ -26,6 +27,7 @@ def dataloader_init(x):
 def sigINT_handler(model_RA, save_model, sig, frame):
     torch.save(model_RA.state_dict(), save_model + '/model_RA')
     torch.save(model_RA, save_model + '/model_RA.pth')
+    torch.jit.script(model_RA).save(save_model + '/model_RA.pt')
     torch.cuda.empty_cache()
     exit()
 
@@ -57,6 +59,16 @@ def test_save_imgs_process(sim_set, model_RA, CUDA, epoch, save_img):
 
 
 def train(dataset_root, save_model, save_img, save_log, weight_pth=None, max_epoch=0, CUDA=None, batch_size=8, num_workers=1):
+    # # check folder exists
+    # assert os.path.isdir(save_model) is False, "old model is exist\n"
+    # assert os.path.isdir(save_img) is False, "old img is exist\n"
+    # assert os.path.isdir(save_log) is False, "old log is exist\n"
+
+    # # build folder
+    # os.makedirs(save_model)
+    # os.makedirs(save_img)
+    # os.makedirs(save_log)
+
     transform = transforms.Compose([
         transforms.ToTensor(),
         # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
@@ -102,14 +114,15 @@ def train(dataset_root, save_model, save_img, save_log, weight_pth=None, max_epo
         logger.flush()
 
         test_save_imgs_process(sim_set, model_RA, CUDA, epoch, save_img)
-        if (epoch+1) % 5 == 0:
-            torch.save(model_RA, save_model + '/model_RA_' + str(epoch) + '.pth')
+        torch.save(model_RA, save_model + '/model_RA_' + str(int((epoch + 1) / 5)) + '.pth')
+        torch.jit.script(model_RA).save(save_model + '/model_RA.pt')
 
     torch.save(model_RA, save_model + '/model_RA.pth')
+    torch.jit.script(model_RA).save(save_model + '/model_RA.pt')
 
 
 if __name__ == "__main__":
-    weight_pth = {"ra_net": "../weight/model_RA.pth"}
+    weight_pth = {"ra_net": "../weight/model_RA_34.pth"}
 
     dataset_root = {"sim_dataset_root": "../dataset/real_sim"}
 
@@ -117,6 +130,6 @@ if __name__ == "__main__":
           save_model="../saves/save_model",
           save_img="../saves/save_img",
           save_log="../saves/save_log",
-          #   weight_pth=weight_pth,
-          max_epoch=100,
+          weight_pth=weight_pth,
+          max_epoch=0,
           CUDA=0)

@@ -50,7 +50,7 @@ def test(dataset_root, save_test, weight_pth, CUDA=None, batch_size=1, num_worke
 
 
 if __name__ == "__main__":
-    weight_pth = {"ra_net": "../weight/model_RA_44.pth"}
+    weight_pth = {"ra_net": "../weight/model_RA_14.pth"}
 
     dataset_root = {"test_dataset_root": "../dataset/try"}  # try
 

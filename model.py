@@ -159,14 +159,14 @@ class reverse_branch(nn.Module):
 class attention_branch(nn.Module):
     def __init__(self, input_channel, image_size=112, output_channel=64, **kargs):
         super(attention_branch, self).__init__()
-        self.image_size = image_size
         self.attention = Unet(input_channel=output_channel, output_channel=output_channel)
         self.predict = Unet(input_channel=output_channel, output_channel=1)
 
     def forward(self, orginal_map, reverse_map):
         x = self.attention(torch.ones_like(orginal_map) - orginal_map)
+        # x = torch.ones_like(orginal_map) - orginal_map
         outputs = self.predict(x * reverse_map - orginal_map)
-        return outputs
+        return outputs, x
 
 
 class reverse_attention_net(nn.Module):
@@ -181,7 +181,7 @@ class reverse_attention_net(nn.Module):
         x = self.feature_net(x)
         orginal_predict, orginal_map = self.forward_net(x)
         reverse_predict, reverse_map = self.reverse_net(x)
-        combine_predict = self.attention_net(orginal_map, reverse_map)
+        combine_predict, combine_map = self.attention_net(orginal_map, reverse_map)
         return orginal_predict, reverse_predict, combine_predict
 
     def name(self):

@@ -46,10 +46,13 @@ class sim_dataset(Dataset):
         golden = cv2.equalizeHist(golden)
         defect = cv2.equalizeHist(defect)
 
+        # random defect brightness
+        defect = defect + np.random.normal(0, 5) * target
+
         # random brightness
-        golden_1 = random.uniform(0, 2) * golden + random.randint(-50, 50)
-        golden_2 = random.uniform(0, 2) * golden + random.randint(-50, 50)
-        defect = random.uniform(0, 2) * defect + random.randint(-50, 50)
+        golden_1 = random.uniform(0.25, 1.75) * golden + random.randint(-25, 25)
+        golden_2 = random.uniform(0.25, 1.75) * golden + random.randint(-25, 25)
+        defect = random.uniform(0.25, 1.75) * defect + random.randint(-25, 25)
 
         # make img in 0 ~ 255
         golden_1[golden_1 > 255], golden_1[golden_1 < 0] = 255, 0
